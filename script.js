@@ -1,7 +1,13 @@
-const player = (sign) => {
-    const getSign = () => sign;
+const player = (sign, defaultName) => {
+    let name = defaultName;
 
-    return { getSign };
+    const getSign = () => sign;
+    const getName = () => name;
+    const setName = (newName) => {
+        name = newName.trim() || defaultName;
+    };
+
+    return { getSign, getName, setName };
 };
 
 const gameBoard = () => {
@@ -21,8 +27,8 @@ const gameBoard = () => {
 };
 
 const gameController = (() => {
-    const player1 = player("X");
-    const player2 = player("O");
+    const player1 = player("X", "Player X");
+    const player2 = player("O", "Player O");
 
     let rounds = 0;
     let isOver = false;
@@ -82,34 +88,80 @@ const gameController = (() => {
     return {
         playRound,
         reset,
+        setNames: (x, o) => {
+            player1.setName(x);
+            player2.setName(o);
+        },
         getField: game.getField,
         getCurrentPlayer: () => currentPlayer.getSign(),
+        getCurrentName: () => currentPlayer.getName(),
+        getName: (sign) => (sign === "X" ? player1 : player2).getName(),
         getWinner: () => winner,
         getIsOver: () => isOver
     };
 })();
 
+const displayController = (() => {
+    const boardEl = document.getElementById("board");
+    const statusEl = document.getElementById("status");
+    const startEl = document.getElementById("start");
+    const xInput = document.getElementById("x-name");
+    const oInput = document.getElementById("o-name");
 
-(() => {
-    const printBoard = () => {
-        for (let i = 0; i < 9; i += 3) {
-            console.log(`${gameController.getField(i) || "."} ${gameController.getField(i + 1) || "."} ${gameController.getField(i + 2) || "."}`);
+    let started = false;
+
+    const cells = Array.from({ length: 9 }, (_, i) => {
+        const cell = document.createElement("button");
+        cell.setAttribute("aria-label", `row ${Math.floor(i / 3) + 1} column ${(i % 3) + 1}`);
+        cell.addEventListener("click", () => {
+            gameController.playRound(i);
+            render();
+        });
+        boardEl.append(cell);
+        return cell;
+    });
+
+    const render = () => {
+        cells.forEach((cell, i) => {
+            const sign = gameController.getField(i);
+            cell.textContent = sign;
+            cell.dataset.sign = sign;
+            cell.disabled = !started || sign !== "" || gameController.getIsOver();
+        });
+
+        const over = gameController.getIsOver();
+        const winner = gameController.getWinner();
+
+        statusEl.classList.toggle("over", over);
+
+        if (!started) {
+            statusEl.textContent = "Press start to duel";
+        } else if (over) {
+            statusEl.textContent = winner
+                ? `${gameController.getName(winner)} wins ${winner}`
+                : "A draw";
+        } else {
+            statusEl.textContent = `${gameController.getCurrentName()} plays ${gameController.getCurrentPlayer()}`;
         }
-        console.log("");
+
+        startEl.textContent = started ? "Play again" : "Start duel";
     };
 
-    while (true) {
-        printBoard();
-
-        while (!gameController.getIsOver()) {
-            const input = prompt("Enter the index for your move [0, ..., 8]: ");
-            if (input === null) return;
-            gameController.playRound(Number(input));
-            printBoard();
-        }
-
-        console.log(gameController.getWinner() ? `The winner is: ${gameController.getWinner()}` : "It's a draw");
-        if (!confirm("Play again?")) return;
+    startEl.addEventListener("click", () => {
+        gameController.setNames(xInput.value, oInput.value);
         gameController.reset();
-    }
+        started = true;
+        render();
+    });
+
+    render();
 })();
+
+for (let i = 0; i < 16; i++) {
+    const petal = document.createElement("i");
+    petal.style.left = `${Math.random() * 100}vw`;
+    petal.style.animationDuration = `${7 + Math.random() * 9}s`;
+    petal.style.animationDelay = `${-Math.random() * 16}s`;
+    petal.style.opacity = 0.55 + Math.random() * 0.45;
+    document.querySelector(".petals").append(petal);
+}

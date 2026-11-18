@@ -1,0 +1,164 @@
+@font-face {
+    font-family: "TropicalAsian";
+    src: url("fonts/TropicalAsian.ttf");
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    display: grid;
+    place-items: center;
+    background: #fff;
+    font-family: "TropicalAsian", "Hiragino Mincho ProN", Georgia, serif;
+}
+
+main {
+    padding: 2rem 1rem;
+    text-align: center;
+}
+
+h1 {
+    margin: 0 0 1.2rem;
+    font-size: clamp(3.4rem, 14vmin, 5.6rem);
+    font-weight: 400;
+}
+
+.players {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+    margin-bottom: 1.2rem;
+    text-align: center;
+}
+
+.players input {
+    width: min(34vw, 150px);
+    padding: 0.5rem 0.6rem;
+    border: 2px solid #000;
+    border-radius: 16px 4px 14px 5px;
+    font: inherit;
+}
+
+/* The grid is drawn, not built: bowed strokes in one SVG, so the ink wobbles
+   while the marks above it stay sharp. */
+.board {
+    position: relative;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    width: min(76vmin, 360px);
+    margin: 0 auto 1.2rem;
+    background: #fff;
+}
+
+.grid {
+    position: absolute;
+    inset: 0;
+    fill: none;
+    stroke: #000;
+    stroke-width: 0.7;
+}
+
+.board button {
+    position: relative;
+    aspect-ratio: 1;
+    border: 0;
+    background: none;
+    color: #000;
+    font: inherit;
+    font-size: clamp(2.6rem, 11vmin, 4.2rem);
+}
+
+.board button:enabled {
+    cursor: pointer;
+}
+
+.board button:hover:enabled {
+    background: rgb(0 0 0 / 0.06);
+}
+
+/* A placed sign is the only thing that matches, so the stamp runs once, as it
+   lands. The offsets keep every mark a touch crooked. */
+.board button[data-sign="X"],
+.board button[data-sign="O"] {
+    animation: press 0.22s ease-out;
+}
+
+.board button[data-sign="X"] {
+    rotate: -4deg;
+}
+
+.board button[data-sign="O"] {
+    rotate: 3deg;
+}
+
+#status {
+    width: fit-content;
+    margin: 0 auto 1rem;
+    font-size: 1.1rem;
+}
+
+/* A finished game reads as a stamp down the page, not as another line of text. */
+#status.over {
+    padding: 0.3em 1.4em;
+    background: #000;
+    color: #fff;
+}
+
+#start {
+    padding: 0.6rem 1.8rem;
+    border: 2px solid #000;
+    border-radius: 20px 6px 18px 7px;
+    background: #000;
+    color: #fff;
+    font: inherit;
+    font-size: 0.9rem;
+    cursor: pointer;
+}
+
+#start:hover {
+    background: #fff;
+    color: #000;
+}
+
+:focus-visible {
+    outline: 2px solid #000;
+    outline-offset: 3px;
+}
+
+/* Pink petals: the one accent on the page, and the scene's motion. */
+.petals i {
+    position: fixed;
+    top: -8vh;
+    z-index: -1;
+    width: 10px;
+    height: 13px;
+    background: linear-gradient(140deg, #ffe1ea, #f290ae 55%, #c95f84);
+    border-radius: 60% 0 60% 0;
+    animation: fall 10s linear infinite;
+}
+
+.petals i:nth-child(even) {
+    animation-name: fall-left;
+}
+
+@keyframes press {
+    from { opacity: 0; transform: scale(1.45); }
+}
+
+@keyframes fall {
+    to { transform: translate(10vw, 115vh) rotate(680deg); }
+}
+
+@keyframes fall-left {
+    to { transform: translate(-10vw, 115vh) rotate(-680deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .petals { display: none; }
+    .board button { animation: none; }
+}
